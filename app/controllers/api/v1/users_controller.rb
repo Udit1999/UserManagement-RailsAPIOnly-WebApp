@@ -1,16 +1,34 @@
 class Api::V1::UsersController < ApplicationController
-
-    def show
-        if signed_in?
-            render json: current_user
+    before_action :authenticate_user!, except: [:create]
+    
+    
+    def show    
+        if (params[:id].present?)
+            if current_user.id==params[:id].to_i or current_user.admin?
+                @user = User.find(params[:id])
+                render json: @user.to_json(:except => :authentication_token)
+            else
+                head 403
+            end
         else
-            head :unauthorized
+            render json: current_user
         end
     end
 
+    def show_all
+        if current_user.admin?
+            @users = User.all
+            render json: @users.to_json(:except => :authentication_token)
+        else
+            head 403
+        end
+        
+    end
+
+
     def create
         if params[:password]==params[:password_confirmation]
-            @user = User.create(user_params)
+            @user = User.create(create_user_params)
             if @user.save
                 current_user = @user
                 render json: @user
@@ -24,20 +42,41 @@ class Api::V1::UsersController < ApplicationController
 
     end
     def update
-        if signed_in?
-            if current_user.update_attributes(user_params)
-                render json: current_user
+        if current_user.admin?
+            user_params = update_user_params
+        else
+            user_params = create_user_params
+        end
+        if current_user.update_attributes(user_params)
+            render json: current_user
+        else
+            render json: { errors: current_user.errors }, status: :unprocessable_entity
+        end
+     end
+
+
+     def destroy
+        if (params[:id].present?)
+            @user = User.find(params[:id])
+            if current_user.admin? or @user.id==current_user.id
+                @user.destroy
+                head :ok
             else
-                render json: { errors: current_user.errors }, status: :unprocessable_entity
+                head 403                
             end
         else
-            head :unauthorized
+            @user = User.find(current_user.id)
+            @user.destroy
         end
      end
 
     private
-    def user_params
-        params.require(:user).permit(:name, :email, :password, :bio, :usertype, :password_confirmation)
+    def create_user_params
+        params.require(:user).permit(:name, :email, :password, :bio, :password_confirmation)
+    end
+
+    def update_user_params
+        params.require(:user).permit(:name, :email, :password, :bio, :kind, :password_confirmation)
     end
 
 end
