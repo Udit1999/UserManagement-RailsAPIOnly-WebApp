@@ -31,6 +31,8 @@ class Api::V1::UsersController < ApplicationController
             @user = User.create(create_user_params)
             if @user.save
                 current_user = @user
+                @session = Session.create(:user_id => @user.id, :token => @user.authentication_token)
+                @session.save
                 render json: @user
             else
                 head :unprocessable_entity
@@ -59,6 +61,9 @@ class Api::V1::UsersController < ApplicationController
         if (params[:id].present?)
             @user = User.find(params[:id])
             if current_user.admin? or @user.id==current_user.id
+                for session in @user.sessions
+                    session.destroy
+                end
                 @user.destroy
                 head :ok
             else

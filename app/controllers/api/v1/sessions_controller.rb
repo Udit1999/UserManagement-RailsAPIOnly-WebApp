@@ -12,6 +12,8 @@ class Api::V1::SessionsController < ApplicationController
       end
 
     def destroy
+        @session = Session.find_by(token: current_user.authentication_token)
+        @session.destroy
         @current_user.authentication_token = nil
         @current_user.save
     end
