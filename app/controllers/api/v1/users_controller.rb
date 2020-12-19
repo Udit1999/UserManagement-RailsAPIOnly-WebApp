@@ -31,7 +31,7 @@ class Api::V1::UsersController < ApplicationController
             @user = User.create(create_user_params)
             if @user.save
                 current_user = @user
-                @session = Session.create(:user_id => @user.id, :token => @user.authentication_token)
+                @session = Session.create(:user_id => @user.id, :token => generate_token)
                 @session.save
                 render json: @user
             else

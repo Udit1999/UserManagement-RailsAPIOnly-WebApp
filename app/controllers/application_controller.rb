@@ -21,6 +21,7 @@ class ApplicationController < ActionController::API
             @current_user = User.find(session.user_id)    
             if @current_user
               @current_user_id = @current_user.id
+              @current_user_token = session.token
             else
               head :unauthorized
             end
@@ -38,6 +39,14 @@ class ApplicationController < ActionController::API
     def signed_in?
       authenticate_user
       @current_user_id.present?
+    end
+
+    def generate_token
+      auth_token = Devise.friendly_token(255)
+      while Session.find_by(token: auth_token)
+        auth_token = Devise.friendly_token(256)
+      end
+      auth_token
     end
         
 end

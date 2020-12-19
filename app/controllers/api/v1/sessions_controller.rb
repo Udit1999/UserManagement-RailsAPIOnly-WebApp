@@ -4,7 +4,10 @@ class Api::V1::SessionsController < ApplicationController
         user = User.find_by_email(params[:email])    
         if user && user.valid_password?(params[:password])
           @current_user = user
-          response.set_header('token', @current_user.authentication_token)
+          token = generate_token
+          s = Session.create(:user_id => @current_user.id, :token => token)
+          s.save
+          response.set_header('token', s.token)
         #   render json: { messages: {'Successfully Logged In'} }, status: :ok 
         else
           render json: { errors: { 'email or password' => ['is invalid'] } }, status: :unprocessable_entity
@@ -12,10 +15,10 @@ class Api::V1::SessionsController < ApplicationController
       end
 
     def destroy
-        @session = Session.find_by(token: current_user.authentication_token)
+        @session = Session.find_by(token: @current_user_token)
         @session.destroy
-        @current_user.authentication_token = nil
-        @current_user.save
     end
+
+    
     
 end
