@@ -44,7 +44,7 @@ class ApplicationController < ActionController::API
     def generate_token
       auth_token = Devise.friendly_token(255)
       while Session.find_by(token: auth_token)
-        auth_token = Devise.friendly_token(256)
+        auth_token = Devise.friendly_token(255)
       end
       auth_token
     end
