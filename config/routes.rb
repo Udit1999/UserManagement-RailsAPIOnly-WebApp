@@ -1,10 +1,11 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
-
-  namespace :api, defaults: {format: :json} do
+  namespace :api, defaults: { format: :json } do
     namespace :v1 do
-      # devise_for :users, skip: [:sessions] 
+      # devise_for :users, skip: [:sessions]
 
-      resource :sessions, only: [:create, :destroy]
+      resource :sessions, only: %i[create destroy]
       resource :users, skip: [:edit]
       get '/users/:id', to: 'users#show'
       delete '/users/:id', to: 'users#destroy'
