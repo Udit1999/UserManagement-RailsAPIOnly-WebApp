@@ -14,7 +14,6 @@ class ApplicationController < ActionController::API
     devise_parameter_sanitizer.permit(:sign_up, keys: %i[name bio usertype])
   end
 
-<<<<<<< HEAD
   def authenticate_user
     session = Session.find_by(token: request.headers['token'])
     if session.nil?
@@ -26,41 +25,6 @@ class ApplicationController < ActionController::API
         @current_user_token = session.token
       else
         head :unauthorized
-=======
-    def authenticate_user
-        if request.headers['token'].present?
-          session = Session.find_by(token: request.headers['token'])
-          if session.nil?
-            head :unauthorized 
-          else
-            @current_user = User.find(session.user_id)    
-            if @current_user
-              @current_user_id = @current_user.id
-              @current_user_token = session.token
-            else
-              head :unauthorized
-            end
-          end
-        end
-    end
-    def authenticate_user!(options = {})
-        head :unauthorized unless signed_in?
-    end
-    
-    def current_user
-        @current_user ||= super || User.find(@current_user_id)
-    end
-    
-    def signed_in?
-      authenticate_user
-      @current_user_id.present?
-    end
-
-    def generate_token
-      auth_token = Devise.friendly_token(255)
-      while Session.find_by(token: auth_token)
-        auth_token = Devise.friendly_token(255)
->>>>>>> 8f75c2684d50051948f1131d365fc3929a13e059
       end
     end
     return if request.headers['token'].blank?
